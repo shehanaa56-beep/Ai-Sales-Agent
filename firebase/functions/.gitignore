@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Service account key (NEVER commit this)
+serviceAccountKey.json
+
+# Environment
+.env
+
+# Logs
+*.log
