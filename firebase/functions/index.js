@@ -177,3 +177,56 @@ exports.broadcastMessage = onRequest({ cors: true }, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// 6. Get Appointments (V2)
+exports.getAppointments = onRequest({ cors: true }, async (req, res) => {
+  if (allowCors(req, res)) return;
+  try {
+    const { companyId } = req.query;
+    if (!companyId) return res.status(400).json({ error: "companyId is required" });
+
+    const appointmentController = require("./appointmentController");
+    const appointments = await appointmentController.getAppointments(db, companyId);
+    res.json(appointments);
+  } catch (err) {
+    console.error("getAppointments error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 7. Update Appointment Status (V2)
+exports.updateAppointmentStatus = onRequest({ cors: true }, async (req, res) => {
+  if (allowCors(req, res)) return;
+  try {
+    const { appointmentId, status } = req.body;
+    if (!appointmentId || !status) return res.status(400).json({ error: "appointmentId and status are required" });
+
+    const appointmentController = require("./appointmentController");
+    const result = await appointmentController.updateAppointmentStatus(db, appointmentId, status);
+    res.json(result);
+  } catch (err) {
+    console.error("updateAppointmentStatus error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8. Create Manual Appointment (V2)
+exports.saveAppointment = onRequest({ cors: true }, async (req, res) => {
+  if (allowCors(req, res)) return;
+  try {
+    const data = req.body;
+    if (!data.companyId || !data.customerName || !data.date || !data.time) {
+      return res.status(400).json({ error: "Missing required booking details (companyId, name, date, time)" });
+    }
+
+    const appointmentController = require("./appointmentController");
+    const result = await appointmentController.createAppointment(db, {
+      ...data,
+      source: "Manual"
+    });
+    res.json(result);
+  } catch (err) {
+    console.error("saveAppointment error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});

@@ -12,6 +12,7 @@ import Analytics from './pages/Analytics';
 import Automations from './pages/Automations';
 import Settings from './pages/Settings';
 import Companies from './pages/Companies';
+import Appointments from './pages/Appointments';
 import Login from './pages/Login';
 import PublicCheckout from './pages/PublicCheckout';
 import { CompanyProvider } from './context/CompanyContext';
@@ -57,6 +58,7 @@ function App() {
       case 'Analytics': return <Analytics setActivePage={setActivePage} />;
       case 'Automations': return <Automations setActivePage={setActivePage} />;
       case 'Settings': return <Settings setActivePage={setActivePage} />;
+      case 'Appointments': return <Appointments setActivePage={setActivePage} />;
       default: return <Dashboard setActivePage={setActivePage} />;
     }
   };
@@ -77,6 +79,7 @@ function App() {
       case 'Analytics': return 'Business intelligence & AI performance';
       case 'Automations': return 'Configure AI-powered workflows';
       case 'Settings': return 'Manage your account and preferences';
+      case 'Appointments': return 'Manage patient bookings and schedules';
       default: return '';
     }
   };

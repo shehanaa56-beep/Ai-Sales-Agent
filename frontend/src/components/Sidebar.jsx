@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
   LayoutDashboard, MessageSquare, ShoppingCart, Users, Package,
-  Bot, BarChart2, Zap, Settings as SettingsIcon, Building2, LogOut, X
+  Bot, BarChart2, Zap, Settings as SettingsIcon, Building2, LogOut, X,
+  Calendar
 } from 'lucide-react';
 
 const Sidebar = ({ activePage, setActivePage, onLogout, isOpen, onClose }) => {
@@ -10,6 +11,7 @@ const Sidebar = ({ activePage, setActivePage, onLogout, isOpen, onClose }) => {
     { name: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { name: 'Conversations', icon: <MessageSquare size={18} /> },
     { name: 'Orders', icon: <ShoppingCart size={18} /> },
+    { name: 'Appointments', icon: <Calendar size={18} /> },
     { name: 'Customers', icon: <Users size={18} /> },
     { name: 'Products', icon: <Package size={18} /> },
   ];

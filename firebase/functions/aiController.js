@@ -7,7 +7,7 @@ const { upsertLead, updateLeadStatus } = require("./leadManager");
 let groqClient = null;
 
 // Default system personality
-const defaultPrompt = "You are a helpful sales assistant for a WhatsApp based AI sales agent. Your goal is to guide users to the right products and help them make a purchase.";
+const defaultPrompt = "You are a professional business assistant. Your goal is to help users with their inquiries, guide them to products/services, and manage appointment bookings efficiently.";
 
 function getGroqClient(apiKey) {
   const key = apiKey || process.env.GROQ_API_KEY || "gsk_dummy_key_to_prevent_crash";
@@ -111,7 +111,16 @@ async function generateAIResponse(userMessage, context = "", systemPrompt = "", 
   - Be extremadamente CONCISE (max 2 sentences).
   - DO NOT summarize history. 
   - DO NOT say "I recall" or "As mentioned."
-  - Answer the current question directly.`;
+  - Answer the current question directly.
+  
+  APPOINTMENTS (CRITICAL):
+  - If the user wants an appointment, you MUST collect: 1) Date (YYYY-MM-DD), 2) Time (HH:MM), 3) Service/Reason, and 4) Full Name.
+  - Until you have ALL 4, keep asking politely for the missing ones.
+  - Once you have all 4, generate the tag: [[BOOK_APPOINTMENT: Date, Time, Service, Doctor, Name]]
+  - If no specific doctor is mentioned, use "None" for Doctor.
+  
+  COMMERCE:
+  - For new purchases, use: [[CREATE_ORDER: Product, Price, Name, Occasion, Date]]`;
 
   // Format history messages
   const historyMessages = history.map(m => ([
@@ -126,10 +135,11 @@ ${existingOrder ? `Active Order: Product: ${existingOrder.product}, Status: ${ex
 
 Current User Message: "${userMessage}"
 
-DYNAMICS:
+INSTRUCTIONS:
 - IF USER SAYS PAYMENT IS DONE: Check "Active Order". If it exists, acknowledge it (e.g. "We are verifying it") and DO NOT generate a new [[CREATE_ORDER]] tag.
-- IF NEW PURCHASE: Include the [[CREATE_ORDER: ProductName, Price, CustomerName, Occasion, OccasionDate]] tag.
-- OCCASION: If the user mentions a birthday, anniversary, or gift purpose, fill the Occasion and OccasionDate fields.
+- IF NEW PURCHASE & ALL INFO READY: Include the [[CREATE_ORDER: ...]] tag.
+- IF BOOKING & ALL INFO READY: Include the [[BOOK_APPOINTMENT: ...]] tag.
+- ALWAYS BE CONCISE.
 `;
 
   const groq = getGroqClient(config.groqKey || config.openaiKey);
@@ -186,6 +196,43 @@ async function processOrderCommand(db, reply, companyId, customerPhone) {
       return cleanReply + paymentInstructions;
     } catch (err) {
       console.error("❌ Failed to process AI order command:", err);
+      return cleanReply;
+    }
+  }
+
+  return reply;
+}
+
+/**
+ * Extract and process [[BOOK_APPOINTMENT: ...]] command from AI reply
+ */
+async function processAppointmentCommand(db, reply, companyId, customerPhone) {
+  // Regex: [[BOOK_APPOINTMENT: Date, Time, Service, Doctor, CustomerName]]
+  const appointmentRegex = /\[\[BOOK_APPOINTMENT:\s*(.*?),\s*(.*?),\s*(.*?),\s*(.*?),\s*([^,\]]+)\]\]/i;
+  const match = reply.match(appointmentRegex);
+
+  if (match) {
+    const [, date, time, service, doctor, customerName] = match;
+    const cleanReply = reply.replace(appointmentRegex, "").trim();
+
+    try {
+      const { createAppointment } = require("./appointmentController");
+      await createAppointment(db, {
+        companyId,
+        customerPhone,
+        customerName,
+        date,
+        time,
+        service,
+        doctor: doctor !== "None" ? doctor : null,
+        status: "Pending",
+        source: "WhatsApp"
+      });
+
+      console.log(`📅 Appointment booked via AI: ${service} for ${customerName} on ${date} at ${time}`);
+      return cleanReply + `\n\n✅ *Appointment Request Received!*\n📅 Date: ${date}\n⏰ Time: ${time}\n👨‍⚕️ Doctor: ${doctor}\n\nWe will confirm your appointment shortly.`;
+    } catch (err) {
+      console.error("❌ Failed to process AI appointment command:", err);
       return cleanReply;
     }
   }
@@ -297,8 +344,9 @@ async function handleIncomingWhatsAppMessage(payload, db, sendFn) {
 
   console.log("🧠 [AI] Final Response:", reply);
 
-  // 4.5️⃣ Intercept and process order commands
+  // 4.5️⃣ Intercept and process commands
   reply = await processOrderCommand(db, reply, companyId, senderNumber);
+  reply = await processAppointmentCommand(db, reply, companyId, senderNumber);
 
   // 5️⃣ Send reply
   const senderId = companyData.whatsapp_number || companyData.phone_number_id;
