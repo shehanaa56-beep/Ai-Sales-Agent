@@ -1,7 +1,9 @@
-import React from 'react';
-import { Bell, LayoutPanelLeft, Menu, X } from 'lucide-react';
+import { Bell, LayoutPanelLeft, Menu, X, Building2 } from 'lucide-react';
+import { useCompany } from '../context/CompanyContext';
 
 const Header = ({ title, subtitle, onMenuClick, isSidebarOpen }) => {
+  const { activeCompanyName } = useCompany();
+
   return (
     <div className="h-20 bg-white border-b border-border-color flex items-center justify-between px-4 md:px-8 shrink-0">
       <div className="flex items-center gap-3">
@@ -16,7 +18,13 @@ const Header = ({ title, subtitle, onMenuClick, isSidebarOpen }) => {
         <div className="flex items-center gap-3 md:gap-4">
             <LayoutPanelLeft className="hidden sm:block w-5 h-5 text-text-main -mt-1.5" />
             <div className="flex flex-col">
-                <h1 className="text-base md:text-lg font-semibold text-text-main m-0 leading-tight">{title}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base md:text-lg font-semibold text-text-main m-0 leading-tight">{title}</h1>
+                  <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded-md border border-slate-200 ml-1">
+                    <Building2 size={10} className="text-slate-500" />
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{activeCompanyName}</span>
+                  </div>
+                </div>
                 <p className="hidden xs:block text-[11px] md:text-[13px] text-text-muted m-0">{subtitle}</p>
             </div>
         </div>

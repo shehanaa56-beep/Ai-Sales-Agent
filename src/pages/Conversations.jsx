@@ -15,6 +15,9 @@ const Conversations = () => {
 
   const { activeCompanyId, selectedCustomer, setSelectedCustomer } = useCompany();
 
+  console.log("API URL:", import.meta.env.VITE_FUNCTIONS_URL);
+  console.log("Company ID:", activeCompanyId);
+
   useEffect(() => {
     loadConversations();
   }, [activeCompanyId]);
@@ -105,7 +108,7 @@ const Conversations = () => {
     setSending(true);
     try {
       // Call the backend broadcastMessage endpoint (reused for single manual message)
-      const response = await fetch('http://localhost:5001/ai-sales-agent-27fbc/us-central1-broadcastMessage', {
+      const response = await fetch(`${import.meta.env.VITE_FUNCTIONS_URL}/broadcastMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

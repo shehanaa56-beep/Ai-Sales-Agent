@@ -104,8 +104,9 @@ const Conversations = () => {
 
     setSending(true);
     try {
-      // Call the backend broadcastMessage endpoint (reused for single manual message)
-      const response = await fetch('http://localhost:5001/ai-sales-agent-27fbc/us-central1-broadcastMessage', {
+      // Use dynamic functions URL from environment
+      const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || 'http://localhost:5001/ai-sales-agent-27fbc/us-central1';
+      const response = await fetch(`${functionsUrl}/broadcastMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

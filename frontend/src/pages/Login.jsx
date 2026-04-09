@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { auth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useCompany } from '../context/CompanyContext';
+import { db } from '../firebase/config';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -9,6 +12,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { activeCompanyId, setActiveCompanyId } = useCompany();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,6 +21,18 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+
+      // Auto-connect to a real company if currently using a test ID or none
+      const currentId = localStorage.getItem('activeCompanyId');
+      if (!currentId || currentId.startsWith('company_test_')) {
+        const q = query(collection(db, 'companies'), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const firstCompanyId = snap.docs[0].id;
+          setActiveCompanyId(firstCompanyId);
+          console.log("🚀 Auto-connected to real company:", firstCompanyId);
+        }
+      }
     } catch (err) {
       console.error("Login error:", err);
       let message = 'An error occurred during sign in.';
