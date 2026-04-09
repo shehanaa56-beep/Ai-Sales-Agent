@@ -15,6 +15,9 @@ const Conversations = () => {
 
   const { activeCompanyId, selectedCustomer, setSelectedCustomer } = useCompany();
 
+  console.log("API URL:", import.meta.env.VITE_FUNCTIONS_URL);
+  console.log("Company ID:", activeCompanyId);
+
   useEffect(() => {
     loadConversations();
   }, [activeCompanyId]);
@@ -105,8 +108,7 @@ const Conversations = () => {
     setSending(true);
     try {
       // Use dynamic functions URL from environment
-      const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || 'http://localhost:5001/ai-sales-agent-27fbc/us-central1';
-      const response = await fetch(`${functionsUrl}/broadcastMessage`, {
+      const response = await fetch(`${import.meta.env.VITE_FUNCTIONS_URL}/broadcastMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

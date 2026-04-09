@@ -27,8 +27,7 @@ const Appointments = () => {
   const loadAppointments = async () => {
     setLoading(true);
     try {
-      const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `http://localhost:5001/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/us-central1`;
-      const response = await fetch(`${functionsUrl}/getAppointments?companyId=${activeCompanyId}`);
+      const response = await fetch(`${import.meta.env.VITE_FUNCTIONS_URL}/getAppointments?companyId=${activeCompanyId}`);
       const data = await response.json();
       if (Array.isArray(data)) {
         setAppointments(data);
@@ -43,8 +42,7 @@ const Appointments = () => {
   const handleAddBooking = async (e) => {
     e.preventDefault();
     try {
-      const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `http://localhost:5001/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/us-central1`;
-      const response = await fetch(`${functionsUrl}/saveAppointment`, {
+      const response = await fetch(`${import.meta.env.VITE_FUNCTIONS_URL}/saveAppointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...newBooking, companyId: activeCompanyId, status: 'Confirmed' })
@@ -61,8 +59,7 @@ const Appointments = () => {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `http://localhost:5001/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/us-central1`;
-      await fetch(`${functionsUrl}/updateAppointmentStatus`, {
+      await fetch(`${import.meta.env.VITE_FUNCTIONS_URL}/updateAppointmentStatus`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appointmentId: id, status: newStatus })
