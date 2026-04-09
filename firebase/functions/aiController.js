@@ -123,10 +123,14 @@ async function generateAIResponse(userMessage, context = "", systemPrompt = "", 
   - For new purchases, use: [[CREATE_ORDER: Product, Price, Name, Occasion, Date]]`;
 
   // Format history messages
-  const historyMessages = history.map(m => ([
-    { role: "user", content: m.inbound },
-    { role: "assistant", content: m.outbound }
-  ])).flat().filter(m => m.content);
+  const historyMessages = history.map(m => {
+    const isUser = (m.direction === 'inbound' || !!m.inbound);
+    const text = m.message || m.inbound || m.outbound;
+    return { 
+      role: isUser ? "user" : "assistant", 
+      content: text 
+    };
+  }).filter(m => m.content);
 
   const userPrompt = `Product Catalog:
 ${context || "No products found."}
@@ -309,7 +313,19 @@ async function handleIncomingWhatsAppMessage(payload, db, sendFn) {
     await db.collection("conversations").add({
       companyId: companyId,
       phone: senderNumber,
+      message: messageText,
+      direction: "inbound",
       inbound: messageText,
+      outbound: "[System: AI Agent Paused]",
+      timestamp: FieldValue.serverTimestamp(),
+    });
+    
+    await db.collection("conversations").add({
+      companyId: companyId,
+      phone: senderNumber,
+      message: "[System: AI Agent Paused]",
+      direction: "outbound",
+      inbound: null,
       outbound: "[System: AI Agent Paused]",
       timestamp: FieldValue.serverTimestamp(),
     });
@@ -353,11 +369,24 @@ async function handleIncomingWhatsAppMessage(payload, db, sendFn) {
   console.log(`📤 Sending AI reply to ${senderNumber} via ${senderId}...`);
   await sendFn(senderId, senderNumber, reply, companyData.api_url, companyData.api_key);
 
-  // 6️⃣ Log conversation
+  // Log Inbound
   await db.collection("conversations").add({
     companyId: companyId,
     phone: senderNumber,
+    message: messageText,
+    direction: "inbound",
     inbound: messageText,
+    outbound: null,
+    timestamp: FieldValue.serverTimestamp(),
+  });
+
+  // Log Outbound
+  await db.collection("conversations").add({
+    companyId: companyId,
+    phone: senderNumber,
+    message: reply,
+    direction: "outbound",
+    inbound: null,
     outbound: reply,
     timestamp: FieldValue.serverTimestamp(),
   });

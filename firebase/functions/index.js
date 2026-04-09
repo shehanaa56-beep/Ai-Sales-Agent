@@ -160,6 +160,8 @@ exports.broadcastMessage = onRequest({ cors: true }, async (req, res) => {
           companyId,
           phone,
           customer_name: "Customer", 
+          message,
+          direction: "outbound",
           inbound: null,
           outbound: message,
           timestamp: FieldValue.serverTimestamp(),

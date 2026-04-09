@@ -73,9 +73,12 @@ const Conversations = () => {
           };
         }
         
+        const isUser = m.direction === 'inbound' || (!!m.inbound && !m.outbound);
+        const text = m.message || m.inbound || m.outbound;
+        
         grouped[phone].messages.push({
-          message: m.inbound,
-          reply: m.outbound,
+          message: isUser ? text : null,
+          reply: !isUser ? text : null,
           timestamp: m.timestamp?.toDate ? m.timestamp.toDate().toLocaleString() : 'Recent'
         });
         
