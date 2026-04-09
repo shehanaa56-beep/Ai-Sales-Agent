@@ -36,17 +36,7 @@ function getDb() {
   return dbInstance;
 }
 
-// Manual CORS handling to bypass emulator preflight blocks
-const allowCors = (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") {
-    res.status(204).send("");
-    return true;
-  }
-  return false;
-};
+
 
 // Import function modules using lazy loading
 let aiController;
@@ -196,7 +186,6 @@ exports.broadcastMessage = onRequest({ cors: true }, async (req, res) => {
 
 // 6. Get Appointments (V2)
 exports.getAppointments = onRequest({ cors: true }, async (req, res) => {
-  if (allowCors(req, res)) return;
   const db = getDb();
   try {
     const { companyId } = req.query;
@@ -213,7 +202,6 @@ exports.getAppointments = onRequest({ cors: true }, async (req, res) => {
 
 // 7. Update Appointment Status (V2)
 exports.updateAppointmentStatus = onRequest({ cors: true }, async (req, res) => {
-  if (allowCors(req, res)) return;
   const db = getDb();
   try {
     const { appointmentId, status } = req.body;
@@ -230,7 +218,6 @@ exports.updateAppointmentStatus = onRequest({ cors: true }, async (req, res) => 
 
 // 8. Create Manual Appointment (V2)
 exports.saveAppointment = onRequest({ cors: true }, async (req, res) => {
-  if (allowCors(req, res)) return;
   const db = getDb();
   try {
     const data = req.body;
