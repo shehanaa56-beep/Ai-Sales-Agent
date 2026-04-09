@@ -73,14 +73,25 @@ const Conversations = () => {
           };
         }
         
-        const isUser = m.direction === 'inbound' || (!!m.inbound && !m.outbound);
-        const text = m.message || m.inbound || m.outbound;
+        const timestamp = m.timestamp?.toDate ? m.timestamp.toDate().toLocaleString() : 'Recent';
         
-        grouped[phone].messages.push({
-          message: isUser ? text : null,
-          reply: !isUser ? text : null,
-          timestamp: m.timestamp?.toDate ? m.timestamp.toDate().toLocaleString() : 'Recent'
-        });
+        if (m.inbound && m.outbound) {
+          // Case 1: Legacy "Pair" Document (Doc contains both Q & A)
+          // We push outbound then inbound so that after the final .reverse() 
+          // they appear in chronological order: [Inbound, Outbound]
+          grouped[phone].messages.push({ message: null, reply: m.outbound, timestamp });
+          grouped[phone].messages.push({ message: m.inbound, reply: null, timestamp });
+        } else {
+          // Case 2: New Unified Format or single-message doc
+          const isUser = m.direction === 'inbound' || (!!m.inbound && !m.outbound);
+          const text = m.message || m.inbound || m.outbound;
+          
+          grouped[phone].messages.push({
+            message: isUser ? text : null,
+            reply: !isUser ? text : null,
+            timestamp
+          });
+        }
         
         if (!grouped[phone].lastTime && m.timestamp) {
           grouped[phone].lastTime = m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
