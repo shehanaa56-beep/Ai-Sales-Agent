@@ -1,0 +1,16 @@
+{
+  "short_name": "AI Sales",
+  "name": "AI Sales Agent Business Suite",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0db08c",
+  "background_color": "#0f172a"
+}

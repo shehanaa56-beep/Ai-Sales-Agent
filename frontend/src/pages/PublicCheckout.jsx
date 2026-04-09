@@ -134,8 +134,8 @@ const PublicCheckout = ({ orderId }) => {
       {/* Product Summary (Left/Top) */}
       <div className="flex-1 bg-white p-8 md:p-12 lg:p-20 flex flex-col justify-center border-r border-slate-200">
          <div className="max-w-md mx-auto w-full">
-            <div className="flex items-center gap-3 mb-10 text-brand-green">
-                <Building2 size={24} />
+            <div className="flex items-center gap-3 mb-10">
+                <img src="/logo.png" alt="AI Sales Logo" className="w-8 h-8 rounded-lg" />
                 <span className="font-bold tracking-tight text-slate-900">AI Sales Suite</span>
             </div>
 

@@ -56,9 +56,7 @@ const Login = () => {
       <div className="w-full max-w-md p-8 relative z-10">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 bg-brand-green rounded-xl flex items-center justify-center shadow-lg shadow-brand-green/20 mb-4 transform rotate-3">
-              <Sparkles className="text-white w-8 h-8" />
-            </div>
+            <img src="/logo.png" alt="AI Sales Agent Logo" className="w-20 h-20 rounded-2xl shadow-2xl shadow-brand-green/20 mb-6 transform -rotate-3 border border-white/10" />
             <h1 className="text-3xl font-bold text-white tracking-tight">AI Sales Agent</h1>
             <p className="text-slate-400 mt-2 text-sm">Elevate your commerce with AI intelligence</p>
           </div>

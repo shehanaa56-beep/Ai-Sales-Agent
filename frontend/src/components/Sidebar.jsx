@@ -48,9 +48,7 @@ const Sidebar = ({ activePage, setActivePage, onLogout, isOpen, onClose }) => {
     `}>
       <div className="px-6 pb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-brand-green rounded-lg flex items-center justify-center text-white font-bold text-base shadow-sm">
-            AI
-            </div>
+            <img src="/logo.png" alt="AI Logo" className="w-10 h-10 rounded-xl shadow-lg border border-white/10" />
             <div className="flex flex-col">
             <span className="text-white font-semibold text-base leading-tight">AI Sales Agent</span>
             <span className="text-sidebar-text text-xs">Business Suite</span>
