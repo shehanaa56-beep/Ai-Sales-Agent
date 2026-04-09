@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "ai-sales-agent-27fbc"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

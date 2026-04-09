@@ -14,18 +14,27 @@ const { sendWhatsAppMessage } = require("./sendMessage");
  * We prioritize the service account key if present to allow connectivity to the real project
  * when the local Firestore emulator is unavailable (e.g. no Java 11).
  */
-const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
-if (fs.existsSync(serviceAccountPath)) {
-  const serviceAccount = require(serviceAccountPath);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    projectId: serviceAccount.project_id,
-  });
-} else {
-  admin.initializeApp();
+let dbInstance = null;
+function getDb() {
+  if (!dbInstance) {
+    const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
+    if (fs.existsSync(serviceAccountPath)) {
+      const serviceAccount = require(serviceAccountPath);
+      if (admin.apps.length === 0) {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          projectId: serviceAccount.project_id,
+        });
+      }
+    } else {
+      if (admin.apps.length === 0) {
+        admin.initializeApp();
+      }
+    }
+    dbInstance = admin.firestore();
+  }
+  return dbInstance;
 }
-
-const db = admin.firestore();
 
 // Manual CORS handling to bypass emulator preflight blocks
 const allowCors = (req, res) => {
@@ -45,6 +54,7 @@ let followupScheduler;
 
 // 1. Order Created Trigger (V2)
 exports.onOrderCreated = onDocumentCreated("orders/{orderId}", async (event) => {
+  const db = getDb();
   const order = event.data.data();
   if (!order) return;
   
@@ -102,6 +112,7 @@ exports.dailyFollowupScheduler = onSchedule({
   schedule: "0 9 * * *",
   timeZone: "Asia/Kolkata"
 }, async (event) => {
+  const db = getDb();
   if (!followupScheduler) followupScheduler = require("./followupScheduler");
   await followupScheduler.runFollowupScheduler(db, sendWhatsAppMessage);
   await followupScheduler.runSmartRetarget(db, sendWhatsAppMessage);
@@ -109,6 +120,7 @@ exports.dailyFollowupScheduler = onSchedule({
 
 // 3. WhatsApp Webhook (V2)
 exports.whatsappWebhook = onRequest({ cors: true }, async (req, res) => {
+  const db = getDb();
   if (!aiController) aiController = require("./aiController");
   
   if (req.method === "GET") return aiController.verifyWebhook(req, res);
@@ -127,6 +139,7 @@ exports.whatsappWebhook = onRequest({ cors: true }, async (req, res) => {
 
 // 4. Get Customers (V2)
 exports.getCustomers = onRequest({ cors: true }, async (req, res) => {
+  const db = getDb();
   try {
     const snap = await db.collection("leads").get();
     const customers = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -139,6 +152,7 @@ exports.getCustomers = onRequest({ cors: true }, async (req, res) => {
 
 // 5. Broadcast Message (V2)
 exports.broadcastMessage = onRequest({ cors: true }, async (req, res) => {
+  const db = getDb();
   try {
     const { companyId, phones, message } = req.body;
     if (!companyId || !phones || !message) {
@@ -183,6 +197,7 @@ exports.broadcastMessage = onRequest({ cors: true }, async (req, res) => {
 // 6. Get Appointments (V2)
 exports.getAppointments = onRequest({ cors: true }, async (req, res) => {
   if (allowCors(req, res)) return;
+  const db = getDb();
   try {
     const { companyId } = req.query;
     if (!companyId) return res.status(400).json({ error: "companyId is required" });
@@ -199,6 +214,7 @@ exports.getAppointments = onRequest({ cors: true }, async (req, res) => {
 // 7. Update Appointment Status (V2)
 exports.updateAppointmentStatus = onRequest({ cors: true }, async (req, res) => {
   if (allowCors(req, res)) return;
+  const db = getDb();
   try {
     const { appointmentId, status } = req.body;
     if (!appointmentId || !status) return res.status(400).json({ error: "appointmentId and status are required" });
@@ -215,6 +231,7 @@ exports.updateAppointmentStatus = onRequest({ cors: true }, async (req, res) => 
 // 8. Create Manual Appointment (V2)
 exports.saveAppointment = onRequest({ cors: true }, async (req, res) => {
   if (allowCors(req, res)) return;
+  const db = getDb();
   try {
     const data = req.body;
     if (!data.companyId || !data.customerName || !data.date || !data.time) {
