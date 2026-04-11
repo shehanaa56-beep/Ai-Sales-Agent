@@ -97,55 +97,58 @@ function App() {
     }
   };
 
-  const path = window.location.pathname;
-  if (path.startsWith('/pay/')) {
-    const orderId = path.split('/pay/')[1];
-    return <PublicCheckout orderId={orderId} />;
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0f172a]">
-        <div className="w-10 h-10 border-4 border-brand-green border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Login />;
-  }
-
   return (
     <CompanyProvider>
-      <div className="flex h-screen w-screen overflow-hidden bg-body-bg">
-        {/* Mobile Backdrop */}
-        {isSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
-            onClick={closeSidebar}
-          />
-        )}
+      {(() => {
+        if (path.startsWith('/pay/')) {
+          const orderId = path.split('/pay/')[1];
+          return <PublicCheckout orderId={orderId} />;
+        }
 
-        <Sidebar 
-          activePage={activePage} 
-          setActivePage={(page) => { setActivePage(page); closeSidebar(); }} 
-          onLogout={handleLogout} 
-          isOpen={isSidebarOpen}
-          onClose={closeSidebar}
-        />
+        if (loading) {
+          return (
+            <div className="min-h-screen w-full flex items-center justify-center bg-[#0f172a]">
+              <div className="w-10 h-10 border-4 border-brand-green border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          );
+        }
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header 
-            title={activePage} 
-            subtitle={getPageSubtitle()} 
-            onMenuClick={toggleSidebar}
-            isSidebarOpen={isSidebarOpen}
-          />
-          <div className="flex-1 overflow-y-auto p-4 md:p-8">
-            {renderPage()}
+        if (!isAuthenticated) {
+          return <Login />;
+        }
+
+        return (
+          <div className="flex h-screen w-screen overflow-hidden bg-body-bg">
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+              <div 
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+                onClick={closeSidebar}
+              />
+            )}
+
+            <Sidebar 
+              activePage={activePage} 
+              setActivePage={(page) => { setActivePage(page); closeSidebar(); }} 
+              onLogout={handleLogout} 
+              isOpen={isSidebarOpen}
+              onClose={closeSidebar}
+            />
+
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <Header 
+                title={activePage} 
+                subtitle={getPageSubtitle()} 
+                onMenuClick={toggleSidebar}
+                isSidebarOpen={isSidebarOpen}
+              />
+              <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                {renderPage()}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
     </CompanyProvider>
   );
 }
