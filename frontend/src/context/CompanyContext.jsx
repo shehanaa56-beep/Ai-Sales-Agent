@@ -5,24 +5,37 @@ const CompanyContext = createContext();
 export const CompanyProvider = ({ children }) => {
   // Initialize with priority: LocalStorage > Env Var > Default Test ID
   const [activeCompanyId, setActiveCompanyId] = useState(() => {
-    return localStorage.getItem('activeCompanyId') || 
-           import.meta.env.VITE_DEFAULT_COMPANY_ID || 
-           'company_test_001';
+    try {
+      return localStorage.getItem('activeCompanyId') || 
+             import.meta.env.VITE_DEFAULT_COMPANY_ID || 
+             'company_test_001';
+    } catch (e) {
+      console.warn("LocalStorage blocked:", e);
+      return import.meta.env.VITE_DEFAULT_COMPANY_ID || 'company_test_001';
+    }
   });
 
   const [activeCompanyName, setActiveCompanyName] = useState(() => {
-    return localStorage.getItem('activeCompanyName') || 'Loading...';
+    try {
+      return localStorage.getItem('activeCompanyName') || 'Loading...';
+    } catch (e) {
+      return 'Loading...';
+    }
   });
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   // Persistence
   useEffect(() => {
-    localStorage.setItem('activeCompanyId', activeCompanyId);
+    try {
+      localStorage.setItem('activeCompanyId', activeCompanyId);
+    } catch (e) {}
   }, [activeCompanyId]);
 
   useEffect(() => {
-    localStorage.setItem('activeCompanyName', activeCompanyName);
+    try {
+      localStorage.setItem('activeCompanyName', activeCompanyName);
+    } catch (e) {}
   }, [activeCompanyName]);
 
   // Load company details from Firestore when ID changes

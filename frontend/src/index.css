@@ -5,8 +5,11 @@
 @tailwind utilities;
 
 @layer base {
+  html, body, #root {
+    @apply h-full min-h-screen w-full;
+  }
   body {
-    @apply bg-body-bg text-text-main antialiased;
+    @apply bg-body-bg text-text-main antialiased m-0 p-0 overflow-x-hidden;
   }
 }
 
