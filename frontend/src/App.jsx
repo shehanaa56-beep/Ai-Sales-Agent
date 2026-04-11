@@ -97,6 +97,8 @@ function App() {
     }
   };
 
+  const path = window.location.pathname;
+
   return (
     <CompanyProvider>
       {(() => {
